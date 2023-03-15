@@ -1,6 +1,17 @@
 const natural = require('natural');
 const fs = require('fs');
 const readline = require('readline');
+const express = require('express');
+const cors = require('cors');
+const bodyParser = require('body-parser');
+
+
+const PORT = 3000;
+
+const app = express();
+app.use(cors());
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json())
 
 const io = readline.createInterface({
     input: process.stdin,
@@ -12,7 +23,7 @@ const operators = ["and", "or", "not"];
 
 const tokenizer = new natural.WordTokenizer();
 
-// step 1_clean document for 
+// step 1_clean document  
 const clean_doc = (doc) => {
     const symbols_replace = "\t\n;?:!.,—";
     const symbols_remove = "!.'’:@#$%^&?<>*“”()[}{]-=;/\"\\";
@@ -161,12 +172,12 @@ const solve_proximity_query = (query) => {
         }
     }
 
-    console.log([...result.keys()].sort((a, b) => a - b));
+    return ([...result.keys()].sort((a, b) => a - b));
 
 }
 
 
-// solving simple boolean query with and, or , not operators. 
+// solving simple and complex boolean query with and, or , not operators. 
 const solve_query = (query) => {
     const query_tokens = tokenizer.tokenize(query);
     const porter_stemmer = natural.PorterStemmer;
@@ -190,31 +201,20 @@ const solve_query = (query) => {
             return acc;
         }
     });
-
-    console.log([...map.keys()].sort((a, b) => a - b));
+    const result_set = [...map.keys()].sort((a, b) => a - b);
+    console.log(result_set);
+    return (result_set);
 };
-
-function askQuery() {
-    io.question('Select from query (or 0 to exit): \n 1. Simple Query \n 2. Proximity Query\n Select: ', (answer) => {
-        if (answer === '0') {
-            io.close();
-            return;
-        }
-        if (answer === '1') {
-            io.question('Enter simple query : ', (query) => {
-                solve_query(query);
-                askQuery();
-            })
-        } else if (answer === '2') {
-            io.question('Enter proximity query : ', (query) => {
-                solve_proximity_query(query);
-                askQuery();
-            })
-        } else {
-            console.log("Invalid Input");
-            askQuery();
-        }
-    });
-}
-
-askQuery();
+app.post('/api/solve_query/',(req,res)=>{
+    const query =  JSON.stringify(req.body.query);
+    console.log('query is ',query);
+    res.send(solve_query(query));
+})
+app.post('/api/solve_proximity_query',(req,res)=>{
+    const query =  JSON.stringify(req.body.query);
+    console.log('query is ',query);
+    res.send(solve_proximity_query(query));
+})
+app.listen(PORT, () => {
+    console.log(`Server listening on port ${PORT}`);
+});

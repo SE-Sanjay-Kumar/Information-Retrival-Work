@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>IR A-1</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+</head>
+
+<body>
+    <div class="container">
+        <h2>CS4051 Assignment-1 by 19K-1052</h2>
+        <br><br>
+        <form>
+            <div class="form-group">
+                <label for="query">Ask Query:</label>
+                <input type="text" class="form-control" id="query" placeholder="Enter Boolean Query">
+            </div>
+
+            <button type="button" class="btn btn-primary" id="submit-query-btn">Submit</button>
+        </form>
+        <div class="results" style="margin-top: 16px;"></div>
+    </div>
+
+    <script>
+        $(document).ready(function () {
+            $('#submit-query-btn').on('click', function () {
+                const query = $('#query').val();
+                const is_proximity = query.indexOf("/") !== -1 ? true: false;
+                const api_hit = 'http://localhost:3000/api/';
+                console.log(query);
+                $.ajax({
+                    type: 'POST',
+                    url:  is_proximity ?  api_hit + 'solve_proximity_query/': api_hit + 'solve_query/',
+                    data: { query },
+                    success: function (result) {
+                        const query_result = JSON.stringify(result);
+                        const value = '<p style="font-size: 18px;"> Result Set : '+result+'</p>';
+                        $('.results').html(value);
+                    },
+                    error: function (err) {
+                        console.log(err);
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+
+</html>
